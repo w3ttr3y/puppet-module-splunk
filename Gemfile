@@ -8,4 +8,7 @@ gem 'facter', '>= 1.7.0'
 
 # Beaker
 gem 'beaker'
-gem 'beaker-rspec'
+gem 'beaker-rspec', :require => false
+gem 'serverspec',   :require => false
+
+gem 'rake', :require => false
