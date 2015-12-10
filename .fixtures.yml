@@ -1,0 +1,4 @@
+fixtures:
+  symlinks:
+    "splunk": "#{source_dir}"
+
