@@ -1,0 +1,15 @@
+{
+  "name": "w3ttr3y-splunk",
+  "version": "0.1.0",
+  "author": "w3ttr3y",
+  "summary": "Install and configure Splunk Enterprise and Splunk Universal Forwarder",
+  "license": "Apache-2.0",
+  "source": "https://github.com/w3ttr3y/puppet-module-splunk",
+  "project_page": "https://github.com/w3ttr3y/puppet-module-splunk",
+  "issues_url": "https://github.com/w3ttr3y/puppet-module-splunk/issues",
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+  ],
+  "data_provider": null
+}
+
