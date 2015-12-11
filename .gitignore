@@ -33,3 +33,6 @@ build/
 
 # unless supporting rvm < 1.11.0 or doing something fancy, ignore this:
 .rvmrc
+
+# Excluding installers; don't have permission to distribute them
+/files/installers
