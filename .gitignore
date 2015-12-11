@@ -36,3 +36,5 @@ build/
 
 # Excluding installers; don't have permission to distribute them
 /files/installers
+log
+spec/fixtures
