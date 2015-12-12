@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe 'splunk::config::install::user' do
+  
+  it { should compile }
 
   context 'with defaults for all parameters' do
     it { should contain_class('splunk::config::install::user') }
