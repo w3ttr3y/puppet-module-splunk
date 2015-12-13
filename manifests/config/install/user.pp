@@ -1,7 +1,7 @@
 # Class: splunk::config::install::user
 # ===========================
 #
-# Configuration opertions for splunk::install::user, a class to manage an OSU user for $SPLUNK_HOME ownership and for service ot run as.
+# Configuration opertions for splunk::install::user, a class to manage an OS user for $SPLUNK_HOME ownership and for service ot run as.
 #
 # Parameters
 # ----------

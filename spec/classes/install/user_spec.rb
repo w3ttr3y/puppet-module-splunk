@@ -29,7 +29,7 @@ describe 'splunk::install::user' do
       let(:params) { { :manage => x } }
       it do
         expect {
-	  #should contain_class('splunk::config::install::user')
+	  should contain_class('splunk::config::install::user')
 	  should not_contain_user('splunk')
         }
       end
