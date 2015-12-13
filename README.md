@@ -14,31 +14,25 @@
 
 ## Description
 
-Start with a one- or two-sentence summary of what the module does and/or what
-problem it solves. This is your 30-second elevator pitch for your module.
-Consider including OS/Puppet version it works with.
+Splunk tries to install and configure a Splunk environment by installing and configuring Splunk Enterprise and Splunk Universal Forwarder instances.
 
-You can give more descriptive information in a second paragraph. This paragraph
-should answer the questions: "What does this module *do*?" and "Why would I use
-it?" If your module has a range of functionality (installation, configuration,
-management, etc.), this is the time to mention it.
+The module was originally written with a dual purpose: to help manage a fairly large (2TB/day) instance and to help quickly bring up virtual instances for testing Splunk apps, basically configuration bundles for use within a Splunk environment.
 
 ## Setup
 
-### What splunk affects **OPTIONAL**
+### What splunk affects
 
-If it's obvious what your module touches, you can skip this section. For
-example, folks can probably figure out that your mysql_instance module affects
-their MySQL instances.
+Splunk will install in a default default location (`/opt/splunk`, `/opt/splunkforwarder`, or `C:\Program Files\Splunk`)
 
-If there's more that they should know about, though, this is the place to mention:
+(TODO: implemented but not commited)You can then configure Splunk assigning it roles such as a search head, indexer, deployment client, deployment server, deployer.  The Splunk puppet module can also configure index clustering.
 
-* A list of files, packages, services, or operations that the module will alter,
-  impact, or execute.
-* Dependencies that your module automatically installs.
-* Warnings or other important notices.
+Typically the module will leave `$SPLUNK_HOME/etc/system/local` only preferring to create apps for all of its configuration.
 
-### Setup Requirements **OPTIONAL**
+In the future it may affect syslog and log rotate in order to facilitate Splunk having read access to the logs.
+
+```{r echo=FALSE, eval=FALSE}
+I'm not sure what our requirements are so commenting out for now; leaving as a reminder to figure out
+### Setup Requirements
 
 If your module requires anything extra before setting up (pluginsync enabled,
 etc.), mention it here.
@@ -46,12 +40,15 @@ etc.), mention it here.
 If your most recent release breaks compatibility or requires particular steps
 for upgrading, you might want to include an additional "Upgrading" section
 here.
+```
 
 ### Beginning with splunk
 
-The very basic steps needed for a user to get the module up and running. This
-can include setup steps, if necessary, or it can be an example of the most
-basic use of the module.
+You will need to download Splunk Enterprise or the Splunk Universal Forwarder from Splunk.  
+
+Typically the downloaded file will be provided by copying it into this modules files directory (although alternatives like configuring a yum repository are also possible).
+
+You will then need to configure the module to know the version and build number.
 
 ## Usage
 
