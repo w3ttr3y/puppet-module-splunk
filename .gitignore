@@ -38,3 +38,11 @@ build/
 /files/installers
 log
 spec/fixtures
+
+# temp files
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
