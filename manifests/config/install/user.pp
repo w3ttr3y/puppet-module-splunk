@@ -34,7 +34,7 @@
 #  The minimum age of the password. Default: undef (no age)
 #  * `shell`
 #  The shell for the user; versions pre-6.2? need /bin/bash. Default: /sbin/nologin
-#   * `user_purge_ssh_keys`
+#   * `purge_ssh_keys`
 #  If the users's SSH keys should be purged. Default: false
 #  * `uid`
 #  The uid for the user. On Windows this parameter cannot be set. Default: undef
@@ -51,7 +51,7 @@
 #      home                => '/opt/splunk',
 #      password_max_age    => 1,
 #      password_min_age    => 1,
-#      user_purge_ssh_keys => true,
+#      purge_ssh_keys => true,
 #      uid                 => 499,
 #    }
 #
@@ -68,13 +68,12 @@
 class splunk::config::install::user (
   $manage              = true,
   $user                = 'splunk',
-  $ensure              = present,
-  $system              = true, #true, false, yes, no
+  $ensure              = 'present',
+  $system              = true,
   $comment             = 'Splunk Server',
-  $expiry              = 'absent',  # absent or /^\d{4}-\d{2}-\d{2}$/
-  $forcelocal          = undef, #true, false, yes, no
+  $expiry              = 'absent',
+  $forcelocal          = undef,
   $groups              = [],
-  #TODO: should we let them set gid?
   $gid                 = '',
   $home                = undef,
   #TODO: default password is a unixism; set different default on Windows
@@ -83,7 +82,7 @@ class splunk::config::install::user (
   $password_min_age    = undef,
   #TODO: earlier versions need bash
   $shell               = '/sbin/nologin',
-  $user_purge_ssh_keys = false,
+  $purge_ssh_keys = false,
   $uid                 = undef, #On Windows, this is read only so throw an error
   ) {
     if ! ($manage in [undef, true, false, 'yes', 'no']) {

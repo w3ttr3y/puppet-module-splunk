@@ -1,21 +1,19 @@
 # Installs Splunk via a package (rpm, dpkg, etc)
 class splunk::install::package (
+    $ensure      = splunk::config::install::package::ensure,
+    $file        = splunk::config::install::package::file,
+    $packge_name = splunk::config::install::package::package_name,
+    $provider    = splunk::config::install::package::provider,
+    $dir         = splunk::config::install::package::dir,
 ) {
 
-  anchor{'pre splunk::install::package': }
+  anchor{'splunk::install::package::begin': } ->
 
-  file {'/tmp/splunk-6.3.1-f3e41e4b37b2-linux-2.6-x86_64.rpm':
-    source  => 'puppet:///modules/splunk/installers/splunk-6.3.1-f3e41e4b37b2-linux-2.6-x86_64.rpm',
-    require => Anchor['pre splunk::install::package'],
-  }
+  package {$::package_name:
+    ensure   => $ensure,
+    source   => "${::dir}/${::file}",
+    provider =>  $::provider,
+  } ->
 
-  package {'splunk':
-    ensure  => present,
-    source  => '/tmp/splunk-6.3.1-f3e41e4b37b2-linux-2.6-x86_64.rpm',
-    require => File['/tmp/splunk-6.3.1-f3e41e4b37b2-linux-2.6-x86_64.rpm'],
-  }
-
-  anchor{'post splunk::install::package':
-    require => Package['splunk'],
-  }
+  anchor{'splunk::install::package::end': }
 }
