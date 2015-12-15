@@ -68,13 +68,12 @@
 class splunk::config::install::user (
   $manage              = true,
   $user                = 'splunk',
-  $ensure              = present,
-  $system              = true, #true, false, yes, no
+  $ensure              = 'present',
+  $system              = true,
   $comment             = 'Splunk Server',
-  $expiry              = 'absent',  # absent or /^\d{4}-\d{2}-\d{2}$/
-  $forcelocal          = undef, #true, false, yes, no
+  $expiry              = 'absent',
+  $forcelocal          = undef,
   $groups              = [],
-  #TODO: should we let them set gid?
   $gid                 = '',
   $home                = undef,
   #TODO: default password is a unixism; set different default on Windows
