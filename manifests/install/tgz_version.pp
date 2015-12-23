@@ -1,4 +1,4 @@
-define tgz_version (
+define splunk::install::tgz_version (
   $version = undef,
   $build,
   $ensure = 'present',
@@ -6,8 +6,10 @@ define tgz_version (
   $base_dir = undef,
   $file_format = '',
   $source_dir = undef,
+  # TODO: adjust this to work with 32-bit
   $manifest_template_ver = 'splunk-%s-%s-linux.2.6-x86_64-manifest',
   $manifest_template_gen = 'splunk-*-manifest',
+  #TODO: adjust this to work for 32-bit
   $tgz_file_template     = 'splunk-%s-%s-Linux-x86_64.tgz'
 ) {
 
