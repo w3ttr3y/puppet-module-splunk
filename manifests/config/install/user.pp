@@ -85,7 +85,6 @@ class splunk::config::install::user (
   $purge_ssh_keys = false,
   $uid                 = undef, #On Windows, this is read only so throw an error
   ) {
-    # TODO: Enure manage is true, false, yes, or no
     if ! ($manage in [undef, true, false, 'yes', 'no']) {
       fail('manage must be one of undef, true, false, yes, or no')
     }
