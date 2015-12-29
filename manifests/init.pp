@@ -56,6 +56,7 @@ class splunk (
   $service_boot_user_args     = '-user %s',
   $service_boot_path          = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
   $service_boot_creates       = '/etc/init.d/splunk',
+  #TODO: add instance variable
 ) {
 
   #Install

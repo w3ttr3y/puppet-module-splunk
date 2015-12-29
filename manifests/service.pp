@@ -1,86 +1,112 @@
 
-class splunk::service (
-  $service_manage,
-  $service_enable,
-  $splunk_home,
-  $user,
-  $group,
-  $service,
-  $service_state = 'running',
+define splunk::service (
+  $ensure             = 'running',
+  $enable             = true,
+  $is_posix           = true,
+  $splunk_home        = '/opt/splunk',
+  $user               = 'splunk',
+  $group              = 'splunk',
+  $cmd                = 'bin/splunk',
+  $license_arg        = 'status',
+  $license_accept_arg = ' --accept-license --no-prompt --answer-yes',
+  $boot_enable_args   = 'enable boot-start',
+  $boot_user_args     = '-user %s',
+  $boot_path          = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+  $boot_creates       = '/etc/init.d/splunk',
+  $utilize_systemd    = false,
+  $instance           = $title,
+  $service_install    = 'splunk::service::enable_init',
 ) {
-  #TODO: fails in the case that Splunk is running as a user other than $user (e.g. is Splunk is running as root when it shouldn't
-  anchor{'splunk::service::begin': }
 
-  # If we're not supposed to manage the service, nothing to do!
-  if $wet_splunk::common::params::service::manage {
-
-    # You can debate if this should be part of managing the service vs installing, but
-    # this will prevent you from managing the service so its a prereq
-    # and if you aren't managing the service, then you can manually deal with this step, so
-    # even though its not where I would initially place it I think it makes sense here
-    exec {'Start Splunk':
-      path    => '/usr/bin',
-      cwd     => $wet_splunk::common::params::directory::splunk_home,
-      #The RPM doesn't always stop Splunk; the tgz method might not either, so stop it if necessary
-      command => "${wet_splunk::common::params::directory::splunk_home}/bin/splunk stop ; ${wet_splunk::common::params::directory::splunk_home}/bin/splunk start --accept-license --no-prompt --answer-yes",
-      #On Windows Puppet can't execute as other users (at least as of 3.6.2)
-      user    => $osfamily ? { 'windows' => nil, default => $wet_splunk::common::params::os_accounts::user},
-      group   => $osfamily ? { 'windows' => nil, default => $wet_splunk::common::params::os_accounts::group},
-      require => Anchor['before wet_splunk::common::service'],
-      #TODO: asuming this won't work on Windows
-      onlyif  => "test -f ${wet_splunk::common::params::directory::splunk_home}/ftr",
+  ########
+  ##  Ownership
+  ############
+  # Ownership has two options: puppet directory or using find
+  #
+  # Puppet Directory uses Puppet's file type to recursively set
+  # the owner and group on the files.  Unfortunately, it is slow.
+  #
+  # The alternative implementation uses find to find file not owned by user or group
+  # and then it uses chmod to change the ownership.  This implementation is posix specific.
+  if $is_posix {
+    $ownership_type    = 'splunk::service::ownership::posix'
+    $ownership_title   = $title
+    $ownership_options = {
+      splunk_home   => $splunk_home,
+      user          => $user,
+      group         => $group,
+      chown         => 'chown',
+      chown_opt     => '-R',
+      path          => '/bin',
+      refresh_only  => true,
     }
-
-    exec { 'Enable Splunk on boot':
-      path => '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
-      command => "${wet_splunk::common::params::directory::splunk_home}/bin/splunk enable boot-start -user ${wet_splunk::common::params::os_accounts::user}",
-      creates => $osfamily ? {
-        'windows' => undef,
-        default => '/etc/init.d/splunk'},
-        require => [Exec['Start Splunk'], Anchor['before wet_splunk::common::service']],
-        onlyif  => 'test ! -f /etc/init.d/splunk',
+  } else {
+    $ownership_type    = 'splunk::service::ownership::puppet' 
+    $ownership_title   = $title
+    $ownership_options = {
+      ensure      => 'directory',
+      splunk_home => $splunk_home,
+      user        => $user,
+      group       => $group,
+      recurse     => true,
     }
+  } 
 
-    exec {'Stop Splunk':
-      path    => '/bin',
-      command => "${wet_splunk::common::params::directory::splunk_home}/bin/splunk stop",
-      onlyif  => "test -f ${wet_splunk::common::params::directory::splunk_home}/var/run/splunk/splunkd.pid -a $(ps -o user -p $(awk -vORS=, '{ print \$1 }' ${wet_splunk::common::params::directory::splunk_home}/var/run/splunk/splunkd.pid | sed 's/,\$//') | tail -n+2 | grep -v ${wet_splunk::common::params::os_accounts::user} | wc -l) -gt 0",
-      require => [Exec['Start Splunk'], Anchor['before wet_splunk::common::service']],
-      notify   => Exec['Chown Splunk Home']
+  # By default, Splunk creates an init script
+  # We can do better and create a systemd service though
+  # We allow people to opt for an init script since
+  # the init script is created by Splunk and is better tested
+  if $service_install =='splunk::service::enable_systemd' and $::systemd_available == true {
+    $service_notify = Exec['systemd-daemon-reload']
+  
+    $init_type = 'splunk::service::enable_systemd'
+    $init_title = $title
+    $init_options = {
+      splunk_home => $splunk_home,
+      instance    => $instance,
+      before      => Splunk::Service::Service[$title],
     }
-
-    exec{'Chown Splunk Home':
-      path        => '/bin',
-      command     => "chown -R ${wet_splunk::common::params::os_accounts::user}:${wet_splunk::common::params::os_accounts::group} ${wet_splunk::common::params::directory::splunk_home}",
-      refreshonly => true,
-      before => Service[$wet_splunk::common::params::service::service_name],
+  } else {
+    $service_notify = undef
+    $init_type = 'splunk::service::enable_init'
+    $init_title = $title
+    $init_options = {
+      splunk_home => $splunk_home,
+      cmd         => $cmd,
+      args        => $boot_enable_args,
+      user_args   => $boot_user_args,
+      user        => $user,
+      path        => $boot_path,
+      creates     => $boot_creates,
+      before      => Splunk::Service::Service[$title],
     }
+  }
 
-     #If $splunk_home isn't owned by the splunk user, it can cause issues, so let's ensure its owned by Splunk
-     #I'd like to have the init script do this, but until then
-    file { $::splunk_home :
-      ensure  => directory,
-      recurse => true, # enable recursive directory management
-      owner   => $::user,
-      group   => $::group,
-      #  #This is the its initial value from the RPM; probably should change it to something else,
-      #  # but right now I'm just trying to initiating massive changes
-        #seluser => 'unconfined_u',
-        #seluser => undef,
-      selinux_ignore_defaults => true,
-      require => Anchor['before wet_splunk::common::service'],
-    }
+  anchor{"splunk::service::begin::${title}": } ->
 
-    service { $wet_splunk::common::params::service::service_name:
-      ensure => $wet_splunk::common::params::service::ensure,
-      enable => $wet_splunk::common::params::service::enable,
-      #Before starting, ensure the splunk user owns the directory and
-      #that the init script has been created.
-      require => [ #File[$wet_splunk::common::params::directory::splunk_home],
-                   Exec['Enable Splunk on boot']]
-    }
+  # Accept License
+  splunk::service::accept_license{$title:
+    splunk_home => $splunk_home,
+    user        => $user,
+    group       => $group,
+    cmd         => $cmd,
+    arg         => $license_arg,
+    accept_arg  => $license_accept_arg,
+  } ->
 
-  } # end if service_manage
+  # Install INIT
+  ensure_resource($init_type, $init_title, $init_options)
 
-  anchor{'splunk::service::end': }
+  # Ownership
+  ensure_resource($ownership_type, $ownership_title, $ownership_options)
+
+  # Service
+  splunk::service::service { $title:
+    ensure      => $ensure,
+    enable      => $enable,
+    splunk_home => $splunk_home,
+    cmd         => $cmd,
+    accept_arg  => $license_accept_arg,
+  } ->
+  anchor{"splunk::service::end::${title}": }
 }
