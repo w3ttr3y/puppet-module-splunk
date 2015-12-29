@@ -42,7 +42,42 @@
 #
 # Copyright 2015 Your name here, unless otherwise noted.
 #
-class splunk {
+class splunk (
+  $splunk_home                = '/opt/splunk',
+  $user                       = 'splunk',
+  $group                      = 'splunk',
+  $cmd                        = 'bin/splunk',
+  $is_posix                   = true,
+  $service_ensure             = 'running',
+  $service_enable             = true,
+  $service_license_arg        = 'status',
+  $service_license_accept_arg = ' --accept-license --no-prompt --answer-yes',
+  $service_boot_enable_args   = 'enable boot-start',
+  $service_boot_user_args     = '-user %s',
+  $service_boot_path          = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+  $service_boot_creates       = '/etc/init.d/splunk',
+) {
 
+  #Install
+
+  #Service
+  #TODO: update to also support systemd
+  splunk::service{'default': 
+    ensure             => $service_ensure,
+    enable             => $service_enable,
+    is_posix           => $is_posix,
+    splunk_home        => $splunk_home,
+    user               => $user,
+    group              => $group,
+    cmd                => $cmd,
+    license_arg        => $service_license_arg,
+    license_accept_arg => $service_license_accept_arg,
+    boot_enable_args   => $service_boot_enable_args,
+    boot_user_args     => $service_boot_user_args,
+    boot_path          => $service_boot_path,
+    boot_creates       => $service_boot_creates,
+  }
+
+  #Config
 
 }

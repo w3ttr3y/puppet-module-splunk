@@ -4,6 +4,7 @@ class splunk::install::common (
   $file,
   $packge_dir,
   $package_provider,
+  $package_name,
   $temp_dir,
   $install_class,
   $file_ensure,
@@ -13,7 +14,7 @@ class splunk::install::common (
   $group_ensure,
   $group_is_system,
   $group_forcelocal,
-  $group_gid, 
+  $group_gid,
   
   #User options
   $user,
@@ -33,8 +34,11 @@ class splunk::install::common (
   $user_uid,
 ) {
 
-  anchor{'splunk::install::common::begin': } ->
+  $t_file = "${temp_dir}/${file}"
   
+  anchor{'splunk::install::common::begin': } ->
+ 
+  # What if multiple instances, but want same user/group?
   group{$::group:
     ensure     => $::group_ensure,
     system     => $::group_is_system,
@@ -59,20 +63,18 @@ class splunk::install::common (
     uid                 => $::user_uid,
   } ->
 
-  $t_file = "${temp_dir}/${file}"
   file {$t_file:
     ensure => $file_ensure,
     source => "${package_dir}/${package_file}"
   } ->
 
   class {$::install_class:
-    ensure            => $::ensure,
-    package_file      => $::package_file,
-    package_name      => $::package_name,
-    package_provider  => $::provider,
-    tmp_dir           => $::tmp_dir,
+    ensure           => $ensure,
+    package_file     => $file,
+    package_name     => $package_name,
+    package_provider => $provider,
+    tmp_dir          => $tmp_dir,
   } ->
-
 
   anchor{'splunk::install::common::end': }
 }
