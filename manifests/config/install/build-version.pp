@@ -1,5 +1,5 @@
 
-class splunk::install::version (
+class splunk::config::install::version (
   $user_versions = {}
 ){
   $known_versions = {
